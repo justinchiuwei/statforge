@@ -1,6 +1,6 @@
 # StatForge
 
-NBA player research with a charcoal/teal/amber dashboard, searchable player histories, manual prop lines, public Kalshi and Polymarket markets and a minutes × production prediction pipeline.
+NBA player research with a neutral cream-and-charcoal workspace, searchable player histories, manual prop lines, public Kalshi and Polymarket markets and a minutes × production prediction pipeline.
 
 **No Odds API key is required for normal use.** Optional sportsbook connections are kept in a closed section.
 
@@ -90,3 +90,5 @@ Polymarket also uses public endpoints without a key. StatForge discovers NBA eve
 `GET /api/ev` compares current Kalshi and Polymarket asks with each player’s smoothed current-season hit rates (Jeffreys Beta(0.5, 0.5); 10–40 appearances, at least one within seven days). It returns positive fee-adjusted estimates, sample sizes, and Wilson intervals for historical hit frequencies. The UI groups the highest estimated EV per player/stat, player, stat, or shows all positives. This separate historical estimator is not the three-player Ridge/Random Forest model and is not validated as a profitable forecasting system.
 
 EV assumes participation and normal binary settlement at half-point lines, holding to settlement, and an order of up to 100 contracts limited by available size. Polymarket fee metadata and Kalshi series/event fee overrides determine entry-fee estimates. Missing fees/asks/size, started games, mismatched teams, insufficient samples, and quotes older than two minutes are excluded. ESPN live logs are preferred; snapshots must be under 24 hours old. The route has a 180-second limit, caches estimates for 60 seconds, and evaluates at most 80 players. No trading credentials or order placement are involved.
+
+The workspace uses system fonts, compact tables, and a muted green data accent. Navigation links directly to EV estimates, exchange lines, and player research. `public/workspace.css` contains the current visual layer, loaded after the base component styles.

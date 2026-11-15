@@ -21,22 +21,22 @@ function toast(message){$('#toast').textContent=message;$('#toast').classList.ad
 function dialog(html){$('#modalContent').innerHTML=html;$('#modal').showModal();icons();}
 $('.modal-close').onclick=()=>$('#modal').close();$('#modal').onclick=e=>{if(e.target===$('#modal'))$('#modal').close()};
 function setupLiveUI(){
- $('.demo').outerHTML='<button class="demo" id="refreshData" title="Fetch the latest regular-season game logs from ESPN"><i></i>2026–27 season <span>↻</span></button>';
+ $('.demo').outerHTML='<button class="demo" id="refreshData" title="Fetch the latest regular-season game logs from ESPN"><span>↻</span> Refresh game logs</button>';
  $('#refreshData').onclick=refreshData;
- $('.tiny-tag').innerHTML='<i></i>NBA SEASON 2026–27';
+ $('.tiny-tag').innerHTML='2026–27 season';
  ['overPercent','underPercent','averageValue','projectedValue'].forEach(id=>$('#'+id).textContent='—');
- $('.next-match').innerHTML='<span class="section-label">SEASON SNAPSHOT</span><div><strong id="snapshotGames">— games</strong><span class="match-venue">Regular season</span></div><small id="snapshotDate">Loading ESPN data…</small>';
+ $('.next-match').innerHTML='<span class="section-label">Season record</span><div><strong id="snapshotGames">— games</strong><span class="match-venue">Regular season</span></div><small id="snapshotDate">Loading ESPN data…</small>';
  $('.available').innerHTML='<i></i>Season game log';$('.available').title='This is a game log, not a current injury report.';
  $('.mock-note').innerHTML='<span data-icon="flask"></span><div><strong>Source: ESPN · 2026–27</strong><p id="sourceNote">Loading current-season data…</p><button class="text-button" id="sourceDetails">Data & methodology ↗</button></div>';
- $('footer>span:last-child').innerHTML='StatForge <span class="footer-separator">/</span>2026–27 NBA <span class="footer-separator">/</span>ESPN';
+ $('footer>span:last-child').textContent='ESPN · Kalshi · Polymarket';
  $('.projected .info').title='Trained Ridge minutes × Random Forest production. Monte Carlo uses chronological calibration residuals. See held-out metrics in methodology.';
- const modelBar=document.createElement('div');modelBar.className='model-bar';modelBar.innerHTML='<span class="model-label">TRAINED PIPELINE</span><span class="model-name">Ridge × Random Forest</span><button class="text-button" id="modelDetails">Methodology ↗</button>';
- $('.summary-cards').before(modelBar);$('#modelDetails').onclick=showMethodology;$('#sourceDetails').onclick=showMethodology;
  $('.insight-note p').textContent='Monte Carlo estimates depend on the model and your assumptions. Probabilities are conditional on participation.';
- $('.insight-callout .eyebrow').textContent='MONTE CARLO LEAN';$('.insight-metric>span').innerHTML='Model probability <small id="leanSide">Over</small>';
+ $('.insight-callout .eyebrow').textContent='Model lean';$('.insight-metric>span').innerHTML='Model probability <small id="leanSide">Over</small>';
  setupPipeline();
  setupMarkets();
  setupEV();
+ setupWorkspaceNavigation();
+ $('#sourceDetails').onclick=showMethodology;
  icons();
 }
 function syncControls(){
@@ -49,6 +49,7 @@ function updatePlayer(){
  $('.team-caption').innerHTML=`<span class="team-dot"></span>${p.team.toUpperCase()} <span class="jersey-num">#${p.number} · ${p.position}</span>`;
  $('#playerPicker').innerHTML=`${p.name}<span data-icon="chevron"></span>`;$('.player-meta').innerHTML=`${p.shortTeam}<span>·</span>${p.position}<span>·</span><span class="available">Regular season</span>`;
  $('.player-portrait>span').textContent=p.number;
+ const portrait=$('#playerHeadshot'),headshot=p.headshot||nbaDirectory.find(item=>item.id===p.id)?.headshot;portrait.hidden=!headshot;if(headshot){portrait.src=headshot;portrait.alt=p.name;portrait.onerror=()=>{portrait.hidden=true}};
  $('#snapshotGames').textContent=`${p.games.length} games played`;$('#snapshotDate').textContent=p.games.length?`Latest game · ${dateFormat(p.games.at(-1).date)}`:'No games available';
  $('#opponentFilter').innerHTML='<option value="all">All opponents</option>'+[...new Set(p.games.map(g=>g.opponent))].sort().map(o=>`<option value="${o}">${o}</option>`).join('');
  const roleAvailable=p.games.some(g=>g.role!=='unknown');$$('[data-group="role"] button').forEach(b=>{b.disabled=!roleAvailable&&b.dataset.value!=='all';b.title=roleAvailable?'Starting role verified from the ESPN box score':'Starting role unavailable from source'});
@@ -66,7 +67,7 @@ function render(){
  $('#overCount').textContent=`${over} of ${n} games`;$('#underCount').textContent=`${under} of ${n} games${push?` · ${push} push`:''}`;
  $('#averageValue').textContent=fmt(avg);$('#averageDiff').textContent=n?`${sign(avg-state.line)} vs line`:'No matching games';$('#projectedValue').textContent=fmt(prediction);$('#projectedDiff').textContent=forecast?`${sign(prediction-state.line)} vs line`:'No matching games';
  $('#chartCaption').textContent=`${labels[state.stat].toUpperCase()} PER GAME`;
- if(forecast){const d=forecast.distribution,side=d.over>=d.under?'Over':'Under',prob=Math.max(d.over,d.under);$('#leanTitle').innerHTML=`${side} <span>${state.line}</span><span class="trend-arrow">${side==='Under'?'↘':'↗'}</span>`;$('#leanText').textContent=`${(prob*100).toFixed(1)}% model probability from ${d.draws.toLocaleString()} simulations, conditional on participation. Historical filters below do not retrain the model.`;$('#leanSide').textContent=side;$('#leanRate').textContent=`${(prob*100).toFixed(1)}%`;$('#rateFill').style.width=`${prob*100}%`;$('#sampleSize').textContent=`${n} matching games`;$('#insightDiff').textContent=`${sign(prediction-state.line)} ${units[state.stat]}`;}else{$('#leanTitle').textContent='Unavailable';$('#leanText').textContent='Model inference could not complete.';$('#leanRate').textContent='—';}
+ if(forecast){const d=forecast.distribution,side=d.over>=d.under?'Over':'Under',prob=Math.max(d.over,d.under);$('#leanTitle').innerHTML=`${side} <span>${state.line}</span>`;$('#leanText').textContent=`${(prob*100).toFixed(1)}% model probability from ${d.draws.toLocaleString()} simulations, conditional on participation. Historical filters below do not retrain the model.`;$('#leanSide').textContent=side;$('#leanRate').textContent=`${(prob*100).toFixed(1)}%`;$('#rateFill').style.width=`${prob*100}%`;$('#sampleSize').textContent=`${n} matching games`;$('#insightDiff').textContent=`${sign(prediction-state.line)} ${units[state.stat]}`;}else{$('#leanTitle').textContent='Unavailable';$('#leanText').textContent='Model inference could not complete.';$('#leanRate').textContent='—';}
  renderChart(games);$('#saveCount').textContent=saved.length;
 }
 function renderChart(games){
@@ -95,7 +96,17 @@ function showMethodology(){
 $('#exportCsv').onclick=()=>{if(!dataset)return;const games=filtered();const rows=[['player','season','date','opponent','venue','role','minutes','points','rebounds','assists','threes','pra','selected_stat','prop_line','result','source'],...games.map(g=>[player().name,dataset.season,g.date,g.opponent,g.venue,g.role,g.minutes,g.points,g.rebounds,g.assists,g.threes,g.pra,state.stat,state.line,g[state.stat]>state.line?'over':g[state.stat]<state.line?'under':'push',g.url])];const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download=`statforge-${player().name.toLowerCase().replaceAll(' ','-')}-${state.stat}-2026-27.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast(`Exported ${games.length} games`)};
 function parseLog(d){if(!d.seasonTypes?.length)return [];if(!d.filters?.some(f=>f.name==='season'&&String(f.value)==='2027'))throw Error('Season mismatch');const games=[];for(const season of d.seasonTypes||[]){if(season.displayName!=='2026-27 Regular Season')continue;for(const cat of season.categories||[])for(const item of cat.events||[]){const e=d.events[item.eventId],s=Object.fromEntries(d.names.map((name,i)=>[name,item.stats[i]]));if(!e||!Number.isFinite(Number(s.points))||new Date(e.gameDate)>new Date())continue;const g={id:e.id,date:e.gameDate,opponent:e.opponent.abbreviation,opponentName:e.opponent.displayName,venue:e.atVs==='vs'?'home':'away',points:Number(s.points),rebounds:Number(s.totalRebounds),assists:Number(s.assists),threes:Number(s['threePointFieldGoalsMade-threePointFieldGoalsAttempted'].split('-')[0]),minutes:Number(s.minutes),role:'unknown',result:e.gameResult,score:e.score,url:e.links.find(l=>l.rel.includes('boxscore'))?.href||''};g.pra=g.points+g.rebounds+g.assists;g.seasonId=2027;g.usage=null;g.pace=null;games.push(g)}}return games.sort((a,b)=>a.date.localeCompare(b.date))}
 async function fetchLog(id){const response=await fetch(`https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${id}/gamelog?season=2027`,{signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('Source temporarily unavailable');return parseLog(await response.json())}
-async function refreshData(){const b=$('#refreshData');b.disabled=true;b.textContent='Refreshing ESPN…';try{const p=player();const response=await fetch(`/api/players/${encodeURIComponent(p.id)}/games`);const result=await response.json();if(!response.ok)throw Error(result.error||'Refresh unavailable');Object.assign(p,result);updatePlayer();render();toast(p.sourceStatus==='live_unavailable'?'Live history is unavailable. Showing the dated ESPN snapshot.':`Updated ${p.name}: ${p.games.length} regular-season games`)}catch{toast('ESPN refresh unavailable. Showing the dated snapshot.')}finally{b.disabled=false;b.innerHTML='<i></i>2026–27 season <span>↻</span>'}}
+async function refreshData(){const b=$('#refreshData');b.disabled=true;b.textContent='Refreshing ESPN…';try{const p=player();const response=await fetch(`/api/players/${encodeURIComponent(p.id)}/games`);const result=await response.json();if(!response.ok)throw Error(result.error||'Refresh unavailable');Object.assign(p,result);updatePlayer();render();toast(p.sourceStatus==='live_unavailable'?'Live history is unavailable. Showing the dated ESPN snapshot.':`Updated ${p.name}: ${p.games.length} regular-season games`)}catch{toast('ESPN refresh unavailable. Showing the dated snapshot.')}finally{b.disabled=false;b.innerHTML='<span>↻</span> Refresh game logs'}}
 async function loadSavedAnalysis(id){const item=saved.find(i=>i.id===id);if(!item)return;const p=nbaDirectory.find(p=>p.id===item.state.player);if(!p){toast('Saved player is not in the current directory');return;}$('#modal').close();if(await selectPlayer(p)){state={...item.state,model:'pipeline',scenario:{...scenarioDefaults(),...item.state.scenario,teammate:null,teammateStatus:'known'}};delete state.availability;delete state.teammate;updatePlayer();render();toast('Saved analysis loaded');}}
 async function init(){setupLiveUI();try{const responses=await Promise.all([fetch('data.json'),fetch('pipeline-models.json'),fetch('players.json')]);if(responses.some(r=>!r.ok))throw Error('Data unavailable');const loaded=await Promise.all(responses.map(r=>r.json()));dataset=loaded[0];pipelineModels=loaded[1];nbaDirectory=loaded[2].players;if(dataset.season!=='2026-27')throw Error('Season mismatch');updatePlayer();render();loadMarkets()}catch{$('#chart').innerHTML='<div class="empty-chart"><strong>Season data could not load</strong><span>Refresh this page to try again.</span></div>';$('#sourceNote').textContent='Data unavailable.';toast('Could not load season data. Please refresh.')}}
 init();
+
+function setupWorkspaceNavigation(){
+ const add=(id,label,target)=>{const button=document.createElement('button');button.id=id;button.className='nav-item';button.innerHTML='<span data-icon="chart"></span>'+label;$('#evNav').after(button);button.onclick=()=>{$(target).scrollIntoView({behavior:'smooth',block:'start'});mark(id)};};
+ const mark=id=>$$('.sidebar nav .nav-item').forEach(button=>button.classList.toggle('active',button.id===id));
+ add('linesNav','Exchange lines','#marketPanel');
+ $('#evNav').parentNode.prepend($('#evNav'));$('#evNav').after($('#linesNav'));
+ $('#researchNav').onclick=()=>{$('#manualResearch').scrollIntoView({behavior:'smooth',block:'start'});mark('researchNav')};
+ $('#evNav').onclick=()=>{$('#evPanel').scrollIntoView({behavior:'smooth',block:'start'});mark('evNav')};
+ mark('evNav');
+}
