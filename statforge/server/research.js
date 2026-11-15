@@ -1,18 +1,16 @@
 // Shared NBA research service for Vercel Node.js Functions.
 import {readJson} from './data.js';
+import {matchPlayer,dateET,teamCode} from './market-utils.js';
+import {loadPolymarket} from './polymarket.js';
 const memory=new Map();
 const SERIES={KXNBAPTS:'points',KXNBAREB:'rebounds',KXNBAAST:'assists',KXNBA3PT:'threes',KXNBAPRA:'pra'};
 const MARKETS={player_points:'points',player_rebounds:'rebounds',player_assists:'assists',player_threes:'threes',player_points_rebounds_assists:'pra'};
-const PROVIDERS={draftkings:'DraftKings',fanduel:'FanDuel',underdog:'Underdog',kalshi:'Kalshi'};
-const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\b(jr|sr|ii|iii|iv)\.?\b/g,'').replace(/[^a-z]/g,'');
+const PROVIDERS={draftkings:'DraftKings',fanduel:'FanDuel',underdog:'Underdog',kalshi:'Kalshi',polymarket:'Polymarket'};
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'private, max-age=30','x-content-type-options':'nosniff'}});
 const assetJSON=readJson;
 async function cached(key,ttl,load){const now=Date.now(),hit=memory.get(key);if(hit&&hit.expires>now)return hit.promise;if(memory.size>100){for(const [k,v] of memory)if(v.expires<=now)memory.delete(k);if(memory.size>100)memory.delete(memory.keys().next().value);}const promise=Promise.resolve().then(load);memory.set(key,{promise,expires:now+ttl*1000});try{return await promise}catch(error){memory.delete(key);throw error}}
-async function getJSON(url,{headers={},timeout=16000}={}){const response=await fetch(url,{headers:{accept:'application/json',...headers},signal:AbortSignal.timeout(timeout)});if(!response.ok){const error=new Error(`Upstream HTTP ${response.status}`);error.status=response.status;throw error;}return response.json();}
-function matchPlayer(name,players){const key=normalize(name),aliases={nicolasclaxton:'nicclaxton',carltoncarrington:'bubcarrington',ronaldholland:'ronholland'};const candidates=players.filter(p=>normalize(p.name)===(aliases[key]||key));return candidates.length===1?candidates[0]:null;}
-function dateET(value=new Date()){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);const p=Object.fromEntries(parts.map(p=>[p.type,p.value]));return `${p.year}-${p.month}-${p.day}`;}
+async function getJSON(url,{headers={},timeout=16000,...options}={}){const response=await fetch(url,{...options,headers:{accept:'application/json',...headers},signal:AbortSignal.timeout(timeout)});if(!response.ok){const error=new Error(`Upstream HTTP ${response.status}`);error.status=response.status;throw error;}return response.json();}
 function eventDate(ticker){const m=ticker.match(/-(\d{2})([A-Z]{3})(\d{2})/),months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];return m?`20${m[1]}-${String(months.indexOf(m[2])+1).padStart(2,'0')}-${m[3]}`:null;}
-const teamCode=code=>({GS:'GSW',SA:'SAS',NO:'NOP',NY:'NYK',UTAH:'UTA',WSH:'WAS'}[code]||code);
 async function schedule(){return cached('schedule',120,async()=>{const dates=[dateET(),dateET(new Date(Date.now()+86400000))];const rows=await Promise.allSettled(dates.map(day=>getJSON('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates='+day.replaceAll('-',''))));return rows.flatMap((r,i)=>r.status==='fulfilled'?(r.value.events||[]).map(e=>{const c=e.competitions?.[0],home=c?.competitors.find(t=>t.homeAway==='home'),away=c?.competitors.find(t=>t.homeAway==='away');return {id:e.id,date:dates[i],startTime:e.date,homeTeam:home?.team.displayName,awayTeam:away?.team.displayName,homeAbbr:home?.team.abbreviation,awayAbbr:away?.team.abbreviation,homeId:home?.team.id,awayId:away?.team.id,state:e.status?.type?.state||'unknown'};}):[])});}
 function matchGame(ticker,games){const day=eventDate(ticker),suffix=ticker.match(/-\d{2}[A-Z]{3}\d{2}([A-Z]+)/)?.[1];return games.find(g=>g.date===day&&[teamCode(g.awayAbbr)+teamCode(g.homeAbbr),teamCode(g.homeAbbr)+teamCode(g.awayAbbr)].includes(suffix))||null;}
 function priceDollar(value){if(value==null||value==='')return null;const n=Number(value);return Number.isFinite(n)&&n>0&&n<1?n:null;}
@@ -52,8 +50,8 @@ export async function handleApi(request,env={}) {
   if(path==='/api/players')return json(assetJSON('players.json'));
   if(path==='/api/props'){
    const players=assetJSON('players.json').players||[],games=await schedule();
-   const result=await kalshi(players,games).catch(()=>({rows:[],status:{provider:'kalshi',name:'Kalshi',state:'unavailable',count:0,message:'The public market feed is temporarily unavailable.'}}));
-   return json({rows:result.rows,providers:[result.status,...['draftkings','fanduel','underdog'].map(provider=>({provider,name:PROVIDERS[provider],state:env.THE_ODDS_API_KEY?'ready':'not_configured',count:0,message:env.THE_ODDS_API_KEY?'Server key configured. Choose one game and stat, then load odds manually.':'Optional feed. No key is needed for player research, manual lines, or public Kalshi markets.'}))],fetchedAt:new Date().toISOString(),scope:'Open upcoming NBA full-game player props; supported stat types only.',cachedSeconds:60});
+   const feeds=await Promise.all(['kalshi','polymarket'].map(provider=>(provider==='kalshi'?kalshi(players,games):cached('polymarket-board',60,()=>loadPolymarket(players,games,getJSON))).catch(()=>({rows:[],status:{provider,name:PROVIDERS[provider],state:'unavailable',count:0,message:'The public market feed is temporarily unavailable.'}}))));
+   return json({rows:feeds.flatMap(feed=>feed.rows),providers:[...feeds.map(feed=>feed.status),...['draftkings','fanduel','underdog'].map(provider=>({provider,name:PROVIDERS[provider],state:env.THE_ODDS_API_KEY?'ready':'not_configured',count:0,message:env.THE_ODDS_API_KEY?'Server key configured. Choose one game and stat, then load odds manually.':'Optional feed. No key is needed for player research, manual lines, or public Kalshi and Polymarket markets.'}))],fetchedAt:new Date().toISOString(),scope:'Open upcoming NBA full-game player props; supported stat types only.',cachedSeconds:60});
   }
   const match=path.match(/^\/api\/players\/(\d{1,12})\/games$/);
   if(match){const player=await playerHistory(match[1],assetJSON('players.json').players||[]);return player?json(player):json({error:'Player not in the current NBA directory'},404)}

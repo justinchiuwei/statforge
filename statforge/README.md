@@ -1,6 +1,6 @@
 # StatForge
 
-NBA player research with a charcoal/teal/amber dashboard, searchable player histories, manual prop lines, public Kalshi markets and a minutes × production prediction pipeline.
+NBA player research with a charcoal/teal/amber dashboard, searchable player histories, manual prop lines, public Kalshi and Polymarket markets and a minutes × production prediction pipeline.
 
 **No Odds API key is required for normal use.** Optional sportsbook connections are kept in a closed section.
 
@@ -30,7 +30,7 @@ The build creates a static frontend in `dist/`; Vercel builds the backend from `
 | --- | --- | --- |
 | `GET /api/players` | `api/players.js` | Directory of 526 NBA players |
 | `GET /api/players/:id/games` | `api/player.js`, via rewrite | Current/prior season game logs with dated fallback |
-| `GET /api/props` | `api/props.js` | Public Kalshi markets; no paid-key requests |
+| `GET /api/props` | `api/props.js` | Public Kalshi and Polymarket markets; no paid-key requests |
 | `POST /api/odds` | `api/odds.js` | Optional, manual single-game/stat sportsbook requests |
 
 The backend uses standard Node.js file access for bundled snapshots, standard Fetch APIs for upstream data, and environment variables through `process.env`. It has no Cloudflare-specific runtime or Sites credentials. Shared logic lives outside the `api/` directory in `server/`.
@@ -82,3 +82,5 @@ The included data/model artifacts are sufficient for deployment; regeneration is
 Snapshots are read-only bundled files; caches are transient and saved analyses use browser-local storage. PostgreSQL remains the recommended next step for durable events, immutable quote history and versioned predictions, with raw response/model files in object storage.
 
 Vercel access protection is separate from the previous Site's private access. See the deployment guide before adding a shared server-managed API key. No environment variable is required for normal use.
+
+Polymarket also uses public endpoints without a key. StatForge discovers NBA events in the next 72 hours and reads both outcome order books for full-game points, rebounds, assists and three-pointer props. Started/finished games are excluded using provider start times and the NBA schedule. Quotes display asks, best bids and contracts available at the ask, excluding trading fees; missing asks remain blank. Discovery is capped at 100 events / 1,000 props per refresh, with partial coverage labeled. Public feeds refresh independently and are cached for 60 seconds. Source rules remain available on each row.
