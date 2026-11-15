@@ -36,6 +36,7 @@ function setupLiveUI(){
  $('.insight-callout .eyebrow').textContent='MONTE CARLO LEAN';$('.insight-metric>span').innerHTML='Model probability <small id="leanSide">Over</small>';
  setupPipeline();
  setupMarkets();
+ setupEV();
  icons();
 }
 function syncControls(){
