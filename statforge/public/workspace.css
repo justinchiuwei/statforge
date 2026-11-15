@@ -360,3 +360,101 @@ dialog::backdrop { background: #24302466; backdrop-filter: none; }
 .field label, .manual-analysis-form label, .engine-validation button, .feature-block .text-button,
 .connection-label, .connection-note, .odds-controls label, .odds-controls > span, .empty-chart,
 .empty-chart strong, .market-rules, .export, .grid-label, .bar-value, .bar-label { color: #697161; }
+
+/* Theme selection is available in the header on desktop and mobile. */
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+.theme-switch { display: inline-flex; padding: 2px; border: 1px solid #d0d8c7; border-radius: 4px; background: #f0f3e9; }
+.theme-switch button { min-height: 28px; padding: 4px 9px; border-radius: 2px; color: #6d7861; font-size: 11px; font-weight: 400; }
+.theme-switch button[aria-pressed="true"] { color: #2e4b30; background: #fff; box-shadow: 0 1px 2px #24351e18; }
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #dce4d7;
+  --muted: #a1ad99;
+  --border: #344034;
+  --soft: #222c23;
+  --panel: #1b231d;
+  --purple: #92b588;
+  --purple-dark: #bad1ae;
+  --accent: #92b588;
+  --lavender: #405344;
+  --amber: #c3ad79;
+}
+html[data-theme="dark"] body { background: #121814; color: var(--ink); }
+html[data-theme="dark"] :is(.sidebar,.topbar) { background: #17201a; border-color: #303b30; }
+html[data-theme="dark"] .topbar { color: #c0cbb8; }
+html[data-theme="dark"] .breadcrumb { color: #89987e; }
+html[data-theme="dark"] .slash { color: #52634a; }
+html[data-theme="dark"] :is(.panel,.ev-panel,.market-panel,.manual-research,.player-card,.pipeline-panel,dialog) { background: #1b231d; border-color: var(--border); }
+html[data-theme="dark"] :is(h1,h2,h3,.player-name,.modal-title,#manualPlayerName) { color: #dce4d7; }
+html[data-theme="dark"] :is(.ev-summary,.engine-metrics,.summary-cards,.scenario-summary,.stat-tabs,.feature-block,.engine-validation,.insight-note,.manual-research-footer) { border-color: #344034; }
+html[data-theme="dark"] :is(.ev-summary > div,.engine-metric,.summary,.next-match) { border-color: #344034; }
+html[data-theme="dark"] :is(.ev-summary,.engine-metric,.summary,.player-card,.insight-panel,.market-table,.feature-block,.engine-validation,.validation-grid,.player-option,.saved-option) :is(strong,b) { color: #d1dfc8; }
+html[data-theme="dark"] :is(p,small,label,.eyebrow,.section-label,.metric-index,.scenario-status,.player-meta,.team-caption,.jersey-num,.insight-metric,.distribution-axis,.distribution-heading,.market-pagination,.quote-book,footer) { color: #a1ad99; }
+html[data-theme="dark"] .player-meta > span:not(.available) { color: #a1ad99; }
+html[data-theme="dark"] :is(.ev-summary span,.ev-summary small,.metric-index i,.engine-metric p,.engine-metric small,.summary > span,.summary small,.field label,.manual-analysis-form label,.scenario-field label,.scenario-field label span,.market-message,.feature-block > div > span,.engine-validation,.market-pagination > div) { color: #a1ad99; }
+html[data-theme="dark"] :is(.ev-intro,.manual-heading p,.page-heading p,.insight-callout p,.insight-callout .eyebrow,.insight-note p,.mock-note strong,.mock-note p,.help-copy,.help-copy p,.modal-subtitle,.player-option small,.saved-option small,.connection-label,.connection-note,.odds-controls label,.odds-controls > span) { color: #a1ad99; }
+html[data-theme="dark"] :is(.text-button,.method-link,.market-rules,.export,.scenario-summary > button,.feature-block .text-button,.engine-validation button) { color: #a2be91; }
+html[data-theme="dark"] :is(.button-outline,.analyze-prop,.engine-info,.demo) { background: #202c22; border-color: #46583e; color: #c8d8bc; }
+html[data-theme="dark"] :is(.button-outline,.analyze-prop,.engine-info,.demo):hover { background: #2a382a; border-color: #6c865d; }
+html[data-theme="dark"] .button-primary { background: #88a976; border-color: #88a976; color: #152010; }
+html[data-theme="dark"] .button-primary:hover { background: #9abb86; border-color: #9abb86; color: #152010; }
+html[data-theme="dark"] .theme-switch { background: #131b15; border-color: #3b4a36; }
+html[data-theme="dark"] .theme-switch button { color: #96a58b; }
+html[data-theme="dark"] .theme-switch button[aria-pressed="true"] { background: #35442f; color: #dce7d2; box-shadow: none; }
+html[data-theme="dark"] :is(.market-search,.ev-filters select,.market-filters select,.manual-analysis-form input,.manual-analysis-form select,#manualPlayerPicker,.scenario-field input,.scenario-field select,.player-search-controls input,.player-search-controls select,.connection-key,.odds-controls select) { background: #151e17; border-color: #3c4b35; color: #d4dfcb; }
+html[data-theme="dark"] :is(input,select,#manualPlayerName,.line-control input,.market-search input) { color: #d4dfcb; }
+html[data-theme="dark"] #manualPlayerPicker:hover { background: #243020; border-color: #738961; }
+html[data-theme="dark"] #manualPlayerPicker > span:last-child { color: #a1b78e; }
+html[data-theme="dark"] .market-table-scroll { border-color: #34412e; scrollbar-color: #4b5f3f #182113; }
+html[data-theme="dark"] .market-table thead { background: #222e1d; }
+html[data-theme="dark"] .market-table th { color: #a8b99a; border-color: #3a4b2e; }
+html[data-theme="dark"] .market-table td { border-color: #2c3924; }
+html[data-theme="dark"] .market-table tr:hover td { background: #202c1c; }
+html[data-theme="dark"] .market-table td > small { color: #9faf91; }
+html[data-theme="dark"] .market-table td > small.quote-time { color: #899e78; }
+html[data-theme="dark"] .market-table td > small.stale { color: #c3ad79; }
+html[data-theme="dark"] .market-table .quote-price { color: #c8dbba; }
+html[data-theme="dark"] .market-table .muted-price { color: #b3c5a3; }
+html[data-theme="dark"] .quote-book { color: #91a481; }
+html[data-theme="dark"] :is(.book-label,.book-label.kalshi,.book-label.polymarket,.book-label.draftkings,.book-label.fanduel,.book-label.underdog) { color: #a3ba93; }
+html[data-theme="dark"] .ev-positive strong { color: #9ac88c !important; }
+html[data-theme="dark"] .ev-uncertainty { color: #c3ad79; }
+html[data-theme="dark"] .ev-uncertainty.stronger { color: #9ac88c; }
+html[data-theme="dark"] :is(.provider-pill,.provider-pill.inactive) { color: #b2c2a3; }
+html[data-theme="dark"] .provider-pill span { color: #91a180; }
+html[data-theme="dark"] :is(.market-footnote,.manual-research-footer) { color: #899c78; border-color: #34432a; }
+html[data-theme="dark"] :is(.market-pagination button,.line-control button) { background: #25321f; border-color: #435737; color: #b4cba3; }
+html[data-theme="dark"] :is(.optional-feeds,.odds-controls,.scenario-controls,.method-row,.validation-grid > span) { background: #172111; border-color: #34492a; }
+html[data-theme="dark"] :is(.optional-feeds > summary,.optional-feeds > summary > span,.optional-feeds-body > p) { color: #9bb48a; }
+html[data-theme="dark"] .optional-feeds-body { border-color: #34492a; }
+html[data-theme="dark"] :is(.segmented,.line-control,.select-wrap select) { background: #172111; color: #b4cba3; }
+html[data-theme="dark"] .segmented button { color: #a4bd91; }
+html[data-theme="dark"] .segmented button:hover { background: #2e4022; }
+html[data-theme="dark"] .segmented button.active { background: #8baa75; color: #172111; }
+html[data-theme="dark"] :is(.player-portrait,.player-portrait img,.player-initials,.game-detail,.match-venue,.has-props,.insight-metric small) { background: #26371c; color: #a3c28a; }
+html[data-theme="dark"] .player-portrait > span { color: #8ba676; }
+html[data-theme="dark"] :is(.player-option,.saved-option) { border-color: #3a512d; }
+html[data-theme="dark"] :is(.player-option,.saved-option):hover { background: #25361b; border-color: #718f58; }
+html[data-theme="dark"] .grid-line { background: #293b20; }
+html[data-theme="dark"] :is(.plot,.distribution-chart) { border-color: #3a512d; }
+html[data-theme="dark"] :is(.grid-label,.bar-value,.bar-label,.chart-top > span:first-child,.legend) { color: #94ad80; }
+html[data-theme="dark"] :is(.bar,.distribution-bin,.legend .under-key) { background: #435e34; }
+html[data-theme="dark"] :is(.bar.over,.distribution-bin.over,.legend .over-key,.rate-track span) { background: #91b475; }
+html[data-theme="dark"] .bar.selected:after { border-color: #b1d490; }
+html[data-theme="dark"] .bar.selected .bar-value { color: #c3dda9; }
+html[data-theme="dark"] :is(.prop-line,.legend .line-key,.distribution-prop) { border-color: #b0b377; }
+html[data-theme="dark"] :is(.prop-line span,.distribution-bin.mixed) { background: #484f2c; color: #d0d4a5; }
+html[data-theme="dark"] .distribution-axis > span:nth-child(2) { color: #b0b377; }
+html[data-theme="dark"] .rate-track { background: #2b3d21; }
+html[data-theme="dark"] :is(.result-tag,.result-tag.under) { background: #354f25; color: #b4d294; }
+html[data-theme="dark"] :is(.insight-callout > div,.insight-metric strong,.insight-title h2,.empty-chart,.empty-chart strong) { color: #c1d6ad; }
+html[data-theme="dark"] .modal-close { color: #9ab386; }
+@media (max-width: 760px) {
+  .topbar-actions { gap: 8px; }
+  html[data-theme="dark"] .topbar > div:before { color: #c7d8ba; }
+}
+@media (max-width: 520px) {
+  .topbar-actions .demo { font-size: 0; padding: 4px 8px; }
+  .topbar-actions .demo > span { font-size: 16px; margin: 0; }
+  .theme-switch button { font-size: 10px; padding: 4px 7px; }
+}
