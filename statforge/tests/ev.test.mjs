@@ -54,3 +54,18 @@ test('EV grouping chooses the greatest EV, respects stat filters, and removes st
  node('#evGroup').value='player';assert.equal(vm.runInContext('evVisibleRows()[0].id',context),'best');
  node('#evStat').value='rebounds';assert.equal(vm.runInContext('evVisibleRows()[0].id',context),'reb');
 });
+
+test('Over and Under views filter before best-per-player grouping and combine with other filters',()=>{
+ const nodes=new Map(),node=selector=>{if(!nodes.has(selector))nodes.set(selector,{value:selector==='#evSearch'?'':selector==='#evGroup'?'player_stat':'all'});return nodes.get(selector)};
+ const base={playerId:'1',playerName:'Player One',provider:'polymarket',stat:'points',observedAt:new Date().toISOString(),market:{game:{startTime:new Date(Date.now()+86400000).toISOString(),homeTeam:'Home',awayTeam:'Away'}}};
+ const rows=[{...base,id:'over-best',side:'over',evPer100:12},{...base,id:'under-best',side:'under',evPer100:6},{...base,id:'under-worse',side:'under',evPer100:3},{...base,id:'under-other',playerId:'2',playerName:'Player Two',provider:'kalshi',side:'under',evPer100:8}];
+ const context=vm.createContext({$:node,rows,searchKey:s=>String(s).toLowerCase()});vm.runInContext(fs.readFileSync('public/ev-ui.js','utf8'),context);vm.runInContext('evData={edges:rows}',context);
+ const ids=()=>vm.runInContext('evVisibleRows().map(row=>row.id).join(",")',context);
+ assert.equal(ids(),'over-best,under-other');
+ vm.runInContext("evSide='under'",context);assert.equal(ids(),'under-other,under-best');
+ node('#evProvider').value='polymarket';assert.equal(ids(),'under-best');
+ node('#evStat').value='assists';assert.equal(ids(),'');node('#evStat').value='all';
+ node('#evGroup').value='all';assert.equal(ids(),'under-best,under-worse');
+ vm.runInContext("evSide='over'",context);assert.equal(ids(),'over-best');
+ node('#evSearch').value='Player Two';assert.equal(ids(),'');
+});
